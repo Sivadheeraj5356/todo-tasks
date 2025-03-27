@@ -1,9 +1,9 @@
 
-// Weather API service using OpenWeatherMap
+// Weather API service using WeatherAPI.com
 // This could be switched to any weather API
 
-const API_KEY = 'bd5e378503939ddaee76f12ad7a97608'; // This is a free API key for OpenWeatherMap
-const BASE_URL = 'https://api.openweathermap.org/data/2.5';
+const API_KEY = '9fc1120f386647d2b10172845252703'; // WeatherAPI.com API key
+const BASE_URL = 'https://api.weatherapi.com/v1';
 
 export interface WeatherData {
   main: {
@@ -29,14 +29,38 @@ export interface WeatherData {
 export async function getWeatherByCity(city: string): Promise<WeatherData> {
   try {
     const response = await fetch(
-      `${BASE_URL}/weather?q=${city}&appid=${API_KEY}&units=metric`
+      `${BASE_URL}/current.json?key=${API_KEY}&q=${city}`
     );
     
     if (!response.ok) {
       throw new Error('Failed to fetch weather data');
     }
     
-    return await response.json();
+    const data = await response.json();
+    
+    // Transform WeatherAPI.com response to match our WeatherData interface
+    return {
+      main: {
+        temp: data.current.temp_c,
+        humidity: data.current.humidity,
+        feels_like: data.current.feelslike_c,
+      },
+      weather: [
+        {
+          id: 800, // Default ID
+          main: data.current.condition.text,
+          description: data.current.condition.text,
+          icon: data.current.condition.icon.split('/').pop(),
+        }
+      ],
+      name: data.location.name,
+      sys: {
+        country: data.location.country,
+      },
+      wind: {
+        speed: data.current.wind_kph / 3.6, // Convert km/h to m/s
+      }
+    };
   } catch (error) {
     console.error('Error fetching weather:', error);
     throw error;
@@ -49,14 +73,38 @@ export async function getWeatherByCoords(
 ): Promise<WeatherData> {
   try {
     const response = await fetch(
-      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+      `${BASE_URL}/current.json?key=${API_KEY}&q=${lat},${lon}`
     );
     
     if (!response.ok) {
       throw new Error('Failed to fetch weather data');
     }
     
-    return await response.json();
+    const data = await response.json();
+    
+    // Transform WeatherAPI.com response to match our WeatherData interface
+    return {
+      main: {
+        temp: data.current.temp_c,
+        humidity: data.current.humidity,
+        feels_like: data.current.feelslike_c,
+      },
+      weather: [
+        {
+          id: 800, // Default ID
+          main: data.current.condition.text,
+          description: data.current.condition.text,
+          icon: data.current.condition.icon.split('/').pop(),
+        }
+      ],
+      name: data.location.name,
+      sys: {
+        country: data.location.country,
+      },
+      wind: {
+        speed: data.current.wind_kph / 3.6, // Convert km/h to m/s
+      }
+    };
   } catch (error) {
     console.error('Error fetching weather:', error);
     throw error;
@@ -74,5 +122,10 @@ export const getCurrentLocation = (): Promise<GeolocationPosition> => {
 };
 
 export function getWeatherIconUrl(iconCode: string): string {
-  return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+  // WeatherAPI.com provides full URLs for icons, but we're only storing the code
+  // If it's a full URL, use it directly, otherwise construct the URL
+  if (iconCode.startsWith('http')) {
+    return iconCode;
+  }
+  return `https://cdn.weatherapi.com/weather/64x64/${iconCode}`;
 }
