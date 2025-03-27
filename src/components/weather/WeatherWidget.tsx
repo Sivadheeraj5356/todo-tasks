@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { getCurrentLocation, getWeatherByCoords, getWeatherIconUrl, WeatherData } from '@/lib/api';
+import { getCurrentLocation, getWeatherByCoords, getWeatherByCity, getWeatherIconUrl, WeatherData } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Cloud, MapPin, Wind, Droplets, Thermometer } from 'lucide-react';
 
@@ -16,13 +17,20 @@ const WeatherWidget: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Get user's current location
-        const position = await getCurrentLocation();
-        const { latitude, longitude } = position.coords;
-        
-        // Fetch weather data based on coordinates
-        const weatherData = await getWeatherByCoords(latitude, longitude);
-        setWeather(weatherData);
+        try {
+          // Attempt to get user's current location
+          const position = await getCurrentLocation();
+          const { latitude, longitude } = position.coords;
+          
+          // Fetch weather data based on coordinates
+          const weatherData = await getWeatherByCoords(latitude, longitude);
+          setWeather(weatherData);
+        } catch (locationError) {
+          console.log('Location access denied, using fallback city');
+          // Fallback to a default city if geolocation fails
+          const weatherData = await getWeatherByCity('London');
+          setWeather(weatherData);
+        }
       } catch (err) {
         console.error('Error fetching weather:', err);
         setError('Could not fetch weather data');
@@ -61,8 +69,8 @@ const WeatherWidget: React.FC = () => {
   }
   
   // Format temperature
-  const temp = Math.round(weather.main.temp);
-  const feelsLike = Math.round(weather.main.feels_like);
+  const temp = Math.round(weather?.main?.temp || 0);
+  const feelsLike = Math.round(weather?.main?.feels_like || 0);
   
   return (
     <Card className="p-4 glass-card animate-fade-in overflow-hidden">
@@ -71,19 +79,21 @@ const WeatherWidget: React.FC = () => {
           <div>
             <div className="flex items-center mb-1">
               <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
-              <h3 className="text-sm font-medium">{weather.name}, {weather.sys.country}</h3>
+              <h3 className="text-sm font-medium">{weather?.name}, {weather?.sys?.country}</h3>
             </div>
             
             <div className="flex items-center">
               <span className="text-3xl font-bold">{temp}°</span>
-              <img 
-                src={getWeatherIconUrl(weather.weather[0].icon)} 
-                alt={weather.weather[0].description}
-                className="h-12 w-12" 
-              />
+              {weather?.weather?.[0]?.icon && (
+                <img 
+                  src={getWeatherIconUrl(weather.weather[0].icon)} 
+                  alt={weather.weather[0].description}
+                  className="h-12 w-12" 
+                />
+              )}
             </div>
             
-            <p className="text-sm capitalize">{weather.weather[0].description}</p>
+            <p className="text-sm capitalize">{weather?.weather?.[0]?.description}</p>
           </div>
           
           <div className="text-right">
@@ -95,12 +105,12 @@ const WeatherWidget: React.FC = () => {
               
               <div className="flex items-center justify-end text-sm">
                 <Wind className="h-4 w-4 mr-1 opacity-70" />
-                <span>{weather.wind.speed} m/s</span>
+                <span>{weather?.wind?.speed} m/s</span>
               </div>
               
               <div className="flex items-center justify-end text-sm">
                 <Droplets className="h-4 w-4 mr-1 opacity-70" />
-                <span>{weather.main.humidity}% humidity</span>
+                <span>{weather?.main?.humidity}% humidity</span>
               </div>
             </div>
           </div>
@@ -110,7 +120,7 @@ const WeatherWidget: React.FC = () => {
           <p className="text-sm text-muted-foreground">
             <Cloud className="h-4 w-4 inline mr-1" />
             <span>
-              {isGoodWeatherForOutdoor(weather) 
+              {weather && isGoodWeatherForOutdoor(weather) 
                 ? 'Great weather for outdoor activities!' 
                 : 'Consider indoor activities today'}
             </span>

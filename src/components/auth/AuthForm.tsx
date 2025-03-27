@@ -171,12 +171,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
               : 'Already have an account? Sign in'}
           </button>
         </div>
-        
-        {mode === 'login' && (
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>Demo credentials: demo@example.com / password</p>
-          </div>
-        )}
       </Card>
     </div>
   );
