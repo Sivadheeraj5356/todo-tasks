@@ -22,6 +22,8 @@ const WeatherWidget: React.FC = () => {
           const position = await getCurrentLocation();
           const { latitude, longitude } = position.coords;
           
+          console.log(`Got coordinates: ${latitude}, ${longitude}`);
+          
           // Fetch weather data based on coordinates
           const weatherData = await getWeatherByCoords(latitude, longitude);
           setWeather(weatherData);
@@ -105,7 +107,7 @@ const WeatherWidget: React.FC = () => {
               
               <div className="flex items-center justify-end text-sm">
                 <Wind className="h-4 w-4 mr-1 opacity-70" />
-                <span>{weather?.wind?.speed} m/s</span>
+                <span>{Math.round(weather?.wind?.speed || 0)} m/s</span>
               </div>
               
               <div className="flex items-center justify-end text-sm">

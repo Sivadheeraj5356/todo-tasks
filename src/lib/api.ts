@@ -47,7 +47,7 @@ export async function getWeatherByCity(city: string): Promise<WeatherData> {
       },
       weather: [
         {
-          id: 800, // Default ID
+          id: data.current.condition.code || 800, // Use condition code from API or default
           main: data.current.condition.text,
           description: data.current.condition.text,
           icon: data.current.condition.icon,
@@ -91,7 +91,7 @@ export async function getWeatherByCoords(
       },
       weather: [
         {
-          id: 800, // Default ID
+          id: data.current.condition.code || 800, // Use condition code from API
           main: data.current.condition.text,
           description: data.current.condition.text,
           icon: data.current.condition.icon,
@@ -122,9 +122,9 @@ export const getCurrentLocation = (): Promise<GeolocationPosition> => {
 };
 
 export function getWeatherIconUrl(iconCode: string): string {
-  // WeatherAPI.com provides full URLs for icons, so we use them directly
-  if (iconCode.startsWith('http')) {
-    return iconCode;
+  // WeatherAPI.com provides relative URLs for icons, so we need to add https:
+  if (iconCode.startsWith('//')) {
+    return `https:${iconCode}`;
   }
-  return iconCode; // The API already returns a full URL
+  return iconCode;
 }
