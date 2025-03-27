@@ -159,7 +159,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
             )}
           </Button>
         </form>
-        
+        <div className='text-center mt-4 text-muted-foreground'>
+          email : demo@example.com <br /> password : password
+        </div>
         <div className="mt-6 text-center">
           <button
             type="button"
