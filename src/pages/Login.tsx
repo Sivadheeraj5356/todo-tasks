@@ -16,14 +16,16 @@ const Login: React.FC = () => {
   }, [isAuthenticated, navigate]);
   
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 bg-gradient-to-b from-background to-secondary/30">
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 bg-background">
       <div className="w-full max-w-md mb-8 text-center">
         <h1 className="text-4xl font-bold mb-2 animate-fade-in">TaskMaster</h1>
         <p className="text-muted-foreground animate-fade-in">
           Manage your tasks with ease
         </p>
       </div>
-      <AuthForm />
+      <div className="w-full max-w-md p-6 bg-card border border-border rounded-lg shadow-sm animate-fade-in">
+        <AuthForm />
+      </div>
     </div>
   );
 };
